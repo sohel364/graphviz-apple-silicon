@@ -122,8 +122,6 @@ def main(args: list[str]) -> int:
     require("makensis", utilities / "NSIS/Bin", build_env, log)
 
     build = root / "build"
-    if build.exists():
-        shutil.rmtree(build)
     build.mkdir(parents=True)
     run(["cmake", "--version"], build, None, log)
     run(
