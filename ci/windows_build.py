@@ -106,6 +106,9 @@ def main(args: list[str]) -> int:
         None,
     )
 
+    # install vcpkg-available dependencies
+    run(["vcpkg", "install", "pkgconf"], root, None)
+
     # retrieve submodules, dependencies are stored there
     run(["git", "submodule", "update", "--init", "--depth=1"], root, None)
 
@@ -136,6 +139,7 @@ def main(args: list[str]) -> int:
             "-DCMAKE_COMPILE_WARNING_AS_ERROR=ON",
             "-Dwith_cxx_api=ON",
             "-DENABLE_LTDL=ON",
+            "-DPKG_CONFIG_EXECUTABLE=C:/vcpkg/installed/x64-windows/tools/pkgconf/pkgconf.exe",
             "-DWITH_EXPAT=ON",
             "-DWITH_GVEDIT=OFF",
             "-DWITH_ZLIB=ON",

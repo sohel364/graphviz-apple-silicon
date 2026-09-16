@@ -210,9 +210,6 @@ if(WIN32)
   if(use_win_pre_inst_libs)
     list(APPEND CMAKE_PREFIX_PATH ${WINDOWS_DEPENDENCY_VCPKG_DIR})
     list(APPEND CMAKE_PREFIX_PATH ${WINDOWS_DEPENDENCY_DIR})
-    set(PKG_CONFIG_EXECUTABLE
-        "${WINDOWS_DEPENDENCY_VCPKG_DIR}/tools/pkgconf/pkgconf.exe"
-        CACHE STRING "The pathname of the pkg-config program")
   endif()
   if(MINGW)
     list(APPEND CMAKE_PREFIX_PATH $ENV{MSYSTEM_PREFIX})
