@@ -1054,6 +1054,9 @@ static Extype_t getval(Expr_t *pgm, Exnode_t *node, Exid_t *sym, Exref_t *ref,
       gp = int2ptr(args[0].integer);
       if (gp) {
         gp = cloneG(gp, args[1].string);
+        if (gp != NULL) {
+          LIST_APPEND(&state->open_graphs, gp);
+        }
         v.integer = ptr2int(gp);
       } else {
         error(ERROR_WARNING, "NULL graph passed to cloneG()");
