@@ -102,7 +102,7 @@ size_t match(char *str, char *pat) {
  * NOTE: We do not assume src and tgt have the same kind.
  */
 int copyAttr(Agobj_t *src, Agobj_t *tgt) {
-  int skind = AGTYPE(src);
+  const int skind = AGTYPE(src);
   int tkind = AGTYPE(tgt);
 
   Agraph_t *const srcg = agraphof(src);
