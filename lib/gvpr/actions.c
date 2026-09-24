@@ -21,14 +21,15 @@
 #include <gvpr/compile.h>
 #include <limits.h>
 #include <stdbool.h>
-#include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 #include <util/agxbuf.h>
 #include <util/alloc.h>
 #include <util/gv_ctype.h>
+#include <util/list.h>
 #include <util/strcasecmp.h>
 #include <util/unreachable.h>
 #include <util/unused.h>
@@ -172,13 +173,25 @@ Agobj_t *copy(Agraph_t *g, Agobj_t *obj) {
 }
 
 typedef struct {
-  Dtlink_t link;
   Agedge_t *key;
   Agedge_t *val;
 } edgepair_t;
 
-static Agedge_t *mapEdge(Dt_t *emap, Agedge_t *e) {
-  edgepair_t *ep = dtmatch(emap, &e);
+typedef LIST(edgepair_t) emap_t;
+
+static int cmppair1(const void *key, const void *candidate) {
+  const Agedge_t *const k = key;
+  const edgepair_t *const c = candidate;
+  if ((uintptr_t)k > (uintptr_t)c->key)
+    return 1;
+  if ((uintptr_t)k < (uintptr_t)c->key)
+    return -1;
+  return 0;
+}
+
+static Agedge_t *mapEdge(emap_t *emap, Agedge_t *e) {
+  edgepair_t *ep =
+      bsearch(e, emap->base, LIST_SIZE(emap), sizeof(emap->base[0]), cmppair1);
   if (ep)
     return ep->val;
   else
@@ -186,7 +199,7 @@ static Agedge_t *mapEdge(Dt_t *emap, Agedge_t *e) {
 }
 
 /// clone subgraph sg in tgt
-static Agraph_t *cloneSubg(Agraph_t *tgt, Agraph_t *g, Dt_t *emap) {
+static Agraph_t *cloneSubg(Agraph_t *tgt, Agraph_t *g, emap_t *emap) {
   Agraph_t *ng;
   Agraph_t *sg;
   Agnode_t *t;
@@ -234,23 +247,10 @@ static Agraph_t *cloneSubg(Agraph_t *tgt, Agraph_t *g, Dt_t *emap) {
   return ng;
 }
 
-static int cmppair(void *k1, void *k2) {
-  const Agedge_t **key1 = k1;
-  const Agedge_t **key2 = k2;
-  if (*key1 > *key2)
-    return 1;
-  else if (*key1 < *key2)
-    return -1;
-  else
-    return 0;
+static int cmppair(const void *k1, const void *k2) {
+  const edgepair_t *const key1 = k1;
+  return cmppair1(key1->key, k2);
 }
-
-static Dtdisc_t edgepair = {
-    .key = offsetof(edgepair_t, key),
-    .size = sizeof(Agedge_t *),
-    .link = offsetof(edgepair_t, link),
-    .comparf = cmppair,
-};
 
 /// clone node, edge and subgraph structure from src to tgt
 static void cloneGraph(Agraph_t *tgt, Agraph_t *src) {
@@ -259,10 +259,9 @@ static void cloneGraph(Agraph_t *tgt, Agraph_t *src) {
   Agnode_t *t;
   Agraph_t *sg;
   char *name;
-  Dt_t *emap = dtopen(&edgepair, Dtoset);
   const size_t n_edges = (size_t)agnedges(src);
-  edgepair_t *data = gv_calloc(n_edges, sizeof(edgepair_t));
-  edgepair_t *ep = data;
+  emap_t emap = {0};
+  LIST_RESERVE(&emap, n_edges);
 
   for (t = agfstnode(src); t; t = agnxtnode(src, t)) {
     if (!copy(tgt, &t->base)) {
@@ -283,21 +282,19 @@ static void cloneGraph(Agraph_t *tgt, Agraph_t *src) {
                   agnameof(agtail(e)), agnameof(aghead(e)), agnameof(src));
         goto done;
       }
-      ep->key = e;
-      ep->val = ne;
-      dtinsert(emap, ep++);
+      LIST_APPEND(&emap, (edgepair_t){.key = e, .val = ne});
     }
   }
+  LIST_SORT(&emap, cmppair);
   for (sg = agfstsubg(src); sg; sg = agnxtsubg(sg)) {
-    if (!cloneSubg(tgt, sg, emap)) {
+    if (!cloneSubg(tgt, sg, &emap)) {
       exerror("error cloning subgraph %s from graph %s", agnameof(sg),
               agnameof(src));
     }
   }
 
 done:
-  dtclose(emap);
-  free(data);
+  LIST_FREE(&emap);
 }
 
 Agraph_t *cloneG(Agraph_t *g, char *name) {
