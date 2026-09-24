@@ -104,7 +104,6 @@ size_t match(char *str, char *pat) {
  * NOTE: We do not assume src and tgt have the same kind.
  */
 int copyAttr(Agobj_t *src, Agobj_t *tgt) {
-  Agraph_t *tgtg;
   Agsym_t *sym = 0;
   Agsym_t *tsym = 0;
   int skind = AGTYPE(src);
@@ -112,7 +111,7 @@ int copyAttr(Agobj_t *src, Agobj_t *tgt) {
   char *val;
 
   Agraph_t *const srcg = agraphof(src);
-  tgtg = agraphof(tgt);
+  Agraph_t *const tgtg = agraphof(tgt);
   while ((sym = agnxtattr(srcg, skind, sym))) {
     tsym = agattrsym(tgt, sym->name);
     if (!tsym)
