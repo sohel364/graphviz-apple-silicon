@@ -103,7 +103,7 @@ size_t match(char *str, char *pat) {
  */
 int copyAttr(Agobj_t *src, Agobj_t *tgt) {
   const int skind = AGTYPE(src);
-  int tkind = AGTYPE(tgt);
+  const int tkind = AGTYPE(tgt);
 
   Agraph_t *const srcg = agraphof(src);
   Agraph_t *const tgtg = agraphof(tgt);
