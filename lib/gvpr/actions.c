@@ -307,11 +307,9 @@ done:
 }
 
 Agraph_t *cloneG(Agraph_t *g, char *name) {
-  Agraph_t *ng;
-
   if (!name || *name == '\0')
     name = agnameof(g);
-  ng = openG(name, g->desc);
+  Agraph_t *const ng = openG(name, g->desc);
   if (ng) {
     copyAttr(&g->base, &ng->base);
     cloneGraph(ng, g);
