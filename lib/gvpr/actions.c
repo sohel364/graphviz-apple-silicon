@@ -99,8 +99,6 @@ size_t match(char *str, char *pat) {
 
 /* Copy attributes from src to tgt. Overrides currently
  * defined values.
- * FIX: we should probably use the default value of the source
- * graph when initializing the attribute, rather than "".
  * NOTE: We do not assume src and tgt have the same kind.
  */
 int copyAttr(Agobj_t *src, Agobj_t *tgt) {
