@@ -197,13 +197,13 @@ static Agraph_t *cloneSubg(Agraph_t *tgt, Agraph_t *g, Dt_t *emap) {
 
   ng = (Agraph_t *)copy(tgt, OBJ(g));
   if (!ng)
-    return 0;
+    return NULL;
   for (t = agfstnode(g); t; t = agnxtnode(g, t)) {
     newt = agnode(tgt, agnameof(t), 0);
     if (!newt) {
       exerror("node %s not found in cloned graph %s", agnameof(t),
               agnameof(tgt));
-      return 0;
+      return NULL;
     } else
       agsubnode(ng, newt, 1);
   }
@@ -219,7 +219,7 @@ static Agraph_t *cloneSubg(Agraph_t *tgt, Agraph_t *g, Dt_t *emap) {
         else
           exerror("edge (%s,%s) not found in cloned graph %s",
                   agnameof(agtail(e)), agnameof(aghead(e)), agnameof(tgt));
-        return 0;
+        return NULL;
       } else
         agsubedge(ng, newe, 1);
     }
@@ -228,7 +228,7 @@ static Agraph_t *cloneSubg(Agraph_t *tgt, Agraph_t *g, Dt_t *emap) {
     if (!cloneSubg(ng, sg, emap)) {
       exerror("error cloning subgraph %s from graph %s", agnameof(sg),
               agnameof(g));
-      return 0;
+      return NULL;
     }
   }
   return ng;
