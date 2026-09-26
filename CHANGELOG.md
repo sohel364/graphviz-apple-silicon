@@ -24,6 +24,10 @@ and this project adheres to
 - If routing produces bounding boxes that all have close-to-zero area, `dot`
   exits with an error message instead of crashing. #2773, #2774, #2776, #2778
 - A crash when using cluster subgraphs has been fixed. #2368, #2854
+- `pkgconf` is no longer included in the Windows installers. If you need
+  `pkgconf` or are building Graphviz from source, you are expected to install it
+  yourself by e.g. `vcpkg install pkgconf`.
+- The CMake build system no longer sets `PKG_CONFIG_EXECUTABLE`.
 
 ## [16.1.0] – 2026-09-03
 
