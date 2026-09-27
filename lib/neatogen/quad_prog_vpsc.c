@@ -144,7 +144,7 @@ constrained_majorization_vpsc(CMajEnvVPSC * e, float *b, float *place,
 	    }
 	    denominator += r * d[i];
 	}
-	if (!is_exactly_zero(denominator) && !is_exactly_equal(denominator, -0.0))
+	if (!is_exactly_pos_zero(denominator) && !is_exactly_equal(denominator, -0.0))
 	    beta = numerator / denominator;
 	else
 	    beta = 1.0;

@@ -169,7 +169,7 @@ static void color(Agraph_t * g)
 	/* skip nodes that were manually colored */
 	int cnt = 0;
 	for (int j = 0; j < NC; j++)
-	    if (!is_exactly_zero(ND_x(n)[j]))
+	    if (!is_exactly_pos_zero(ND_x(n)[j]))
 		cnt++;
 	if (cnt > 0)
 	    continue;

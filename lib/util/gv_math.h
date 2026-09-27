@@ -53,7 +53,7 @@ static inline bool is_exactly_equal(double a, double b) {
 }
 
 /**
- * \brief is a value precisely 0.0?
+ * \brief is a value precisely +0.0?
  *
  * This function should only be used when you know you want comparison with no
  * tolerance, which is rare. Floating-point arithmetic accumulates imprecision,
@@ -67,7 +67,9 @@ static inline bool is_exactly_equal(double a, double b) {
  * \param v Value to check
  * \return True if the value is equal to exactly 0.0
  */
-static inline bool is_exactly_zero(double v) { return is_exactly_equal(v, 0); }
+static inline bool is_exactly_pos_zero(double v) {
+  return is_exactly_equal(v, 0);
+}
 
 /**
  * \brief scale up or down a non-negative integer, clamping to \p [0, INT_MAX]

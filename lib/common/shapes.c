@@ -424,7 +424,7 @@ static bool isBox(node_t *n) {
 
     if ((p = ND_shape(n)->polygon)) {
       return p->sides == 4 && fabs(fmod(p->orientation, 90)) < 0.5 &&
-             is_exactly_zero(p->distortion) && is_exactly_zero(p->skew);
+             is_exactly_pos_zero(p->distortion) && is_exactly_pos_zero(p->skew);
     }
     return false;
 }
@@ -2058,7 +2058,7 @@ static void poly_init(node_t * n)
     /* I don't know how to distort or skew ellipses in postscript */
     /* Convert request to a polygon with a large number of sides */
     if (sides <= 2 &&
-        (!is_exactly_zero(distortion) || !is_exactly_zero(skew))) {
+        (!is_exactly_pos_zero(distortion) || !is_exactly_pos_zero(skew))) {
 	sides = 120;
     }
 
@@ -2070,7 +2070,7 @@ static void poly_init(node_t * n)
 	ND_label(n)->valign = 'c';
 
     const bool isBox = sides == 4 && fabs(fmod(orientation, 90)) < 0.5
-                    && is_exactly_zero(distortion) && is_exactly_zero(skew);
+                    && is_exactly_pos_zero(distortion) && is_exactly_pos_zero(skew);
     if (isBox) {
 	/* for regular boxes the fit should be exact */
     } else if (ND_shape(n)->polygon->vertices) {
@@ -2463,10 +2463,10 @@ static bool poly_inside(inside_t * inside_context, pointf p)
 
 	/* scale */
 	inside_context->s.scalex = n_width;
-	if (!is_exactly_zero(xsize))
+	if (!is_exactly_pos_zero(xsize))
 	    inside_context->s.scalex /= xsize;
 	inside_context->s.scaley = n_height;
-	if (!is_exactly_zero(ysize))
+	if (!is_exactly_pos_zero(ysize))
 	    inside_context->s.scaley /= ysize;
 	inside_context->s.box_URx = n_outline_width / 2;
 	inside_context->s.box_URy = n_outline_height / 2;

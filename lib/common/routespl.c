@@ -941,7 +941,7 @@ static void bend(pointf spl[4], pointf centroid) {
   const double vY = centroid.y - midpt.y;
   const double magV = hypot(vX, vY);
   // if midpoint == centroid, do not divide by zero
-  if (is_exactly_zero(magV) || is_exactly_equal(magV, -0.0))
+  if (is_exactly_pos_zero(magV) || is_exactly_equal(magV, -0.0))
     return;
   const pointf a = {.x = midpt.x - vX / magV * r,
                     .y = midpt.y - vY / magV * r}; // + would be closest point
