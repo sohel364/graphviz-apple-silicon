@@ -67,6 +67,29 @@ static inline bool is_exactly_pos_zero(double v) {
   return is_exactly_equal(v, 0);
 }
 
+/// @brief is a value precisely +0.0 or -0.0?
+///
+/// This function should only be used in situations where ±0.0 would produce an
+/// error or undesired computation result if not handled as a special case.
+/// Floating-point arithmetic accumulates imprecision, so zero comparisons
+/// should generally be done with respect to a non-zero tolerance (e.g.
+/// `fabs(my_value) < my_tolerance`) to account for this.
+///
+/// The common use case for this function is guarding against division/modulo by
+/// 0.
+///
+/// @param v Value to check
+/// @return True if the value is equal to exactly 0.0 or exactly -0.0
+static inline bool is_exactly_zero(double v) {
+  if (is_exactly_pos_zero(v)) {
+    return true;
+  }
+  if (is_exactly_equal(v, -0.0)) {
+    return true;
+  }
+  return false;
+}
+
 /// @brief scale up or down a non-negative integer, clamping to `[0, INT_MAX]`
 ///
 /// @param original Value to scale
