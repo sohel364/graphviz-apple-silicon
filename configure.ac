@@ -1393,7 +1393,6 @@ else
   else
     PKG_CHECK_MODULES(LASI, [lasi],[
       use_lasi="Yes"
-      AC_DEFINE(HAVE_LASI,1,[Define if you have the lasi library])
       AC_SUBST([LASI_CFLAGS])
       AC_SUBST([LASI_LIBS])
     ],[
