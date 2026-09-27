@@ -53,7 +53,7 @@ Dtmethod_t* Dtobag;
 #define DTDISC(disc,key,size,link,makef,freef,comparf)
 typedef void*      (*Dtmake_f)(void*, Dtdisc_t*);
 typedef void         (*Dtfree_f)(void*, Dtdisc_t*);
-typedef int          (*Dtcompar_f)(Dt_t*, void*, void*, Dtdisc_t*);
+typedef int          (*Dtcompar_f)(Dt_t*, void*, void*);
 .Ce
 .Ss "OBJECT OPERATIONS"
 .Cs
@@ -206,7 +206,7 @@ If \f5makef\fP is \f5NULL\fP, \f5obj\fP itself will be inserted into \f5dt\fP.
 If not \f5NULL\fP,
 \f5freef\fP is used to destroy data associated with \f5obj\fP.
 .PP
-.Ss "int (*comparf)(Dt_t* dt, void* key1, void* key2, Dtdisc_t* disc)"
+.Ss "int (*comparf)(Dt_t* dt, void* key1, void* key2)"
 If not \f5NULL\fP, \f5comparf\fP is used to compare two keys.
 Its return value should be \f5<0\fP, \f5=0\fP, or \f5>0\fP to indicate
 whether \f5key1\fP is smaller, equal to, or larger than \f5key2\fP.
