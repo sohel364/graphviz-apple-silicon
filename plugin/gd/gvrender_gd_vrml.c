@@ -385,7 +385,7 @@ interpolate_zcoord(GVJ_t *job, pointf p1, pointf fst, double fstz, pointf snd, d
     double len, d;
 
     if (ND_rank(agtail(e)) != ND_rank(aghead(e))) {
-	if (is_exactly_pos_zero(snd.y - fst.y) || is_exactly_equal(snd.y - fst.y, -0.0))
+	if (is_exactly_zero(snd.y - fst.y))
 	    return (fstz + sndz) / 2.0;
 	return fstz + (sndz - fstz) * (p1.y - fst.y) / (snd.y - fst.y);
     } 
