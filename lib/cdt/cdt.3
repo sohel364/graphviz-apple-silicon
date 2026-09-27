@@ -52,7 +52,7 @@ Dtmethod_t* Dtobag;
 .Cs
 #define DTDISC(disc,key,size,link,makef,freef,comparf)
 typedef void*      (*Dtmake_f)(void*, Dtdisc_t*);
-typedef void         (*Dtfree_f)(void*, Dtdisc_t*);
+typedef void         (*Dtfree_f)(void*);
 typedef int          (*Dtcompar_f)(void*, void*);
 .Ce
 .Ss "OBJECT OPERATIONS"
@@ -202,7 +202,7 @@ If \f5makef\fP is not \f5NULL\fP,
 to make a copy of \f5obj\fP suitable for insertion into \f5dt\fP.
 If \f5makef\fP is \f5NULL\fP, \f5obj\fP itself will be inserted into \f5dt\fP.
 .PP
-.Ss "  void (*freef)(void* obj, Dtdisc_t* disc)"
+.Ss "  void (*freef)(void* obj)"
 If not \f5NULL\fP,
 \f5freef\fP is used to destroy data associated with \f5obj\fP.
 .PP
