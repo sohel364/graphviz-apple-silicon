@@ -28,6 +28,8 @@ and this project adheres to
   `pkgconf` or are building Graphviz from source, you are expected to install it
   yourself by e.g. `vcpkg install pkgconf`.
 - The CMake build system no longer sets `PKG_CONFIG_EXECUTABLE`.
+- The effect of a negative argument to `gvmap -r …` has been documented in the
+  man page. #2844
 
 ## [16.1.0] – 2026-09-03
 
