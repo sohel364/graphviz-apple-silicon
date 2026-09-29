@@ -63,16 +63,12 @@ int Ptriangulate(Ppoly_t *polygon, void (*fn)(void *, const Ppoint_t *),
 static int triangulate(Ppoint_t **pointp, size_t pointn,
                        void (*fn)(void *, const Ppoint_t *), void *vc) {
   assert(pointn >= 3);
-  Ppoint_t A[3];
   if (pointn > 3) {
     for (size_t i = 0; i < pointn; i++) {
       const size_t ip1 = (i + 1) % pointn;
       const size_t ip2 = (i + 2) % pointn;
       if (isdiagonal(i, pointp, pointn, point_indexer)) {
-        A[0] = *pointp[i];
-        A[1] = *pointp[ip1];
-        A[2] = *pointp[ip2];
-        fn(vc, A);
+        fn(vc, (Ppoint_t[]){*pointp[i], *pointp[ip1], *pointp[ip2]});
         size_t j = 0;
         for (i = 0; i < pointn; i++)
           if (i != ip1)
@@ -82,10 +78,7 @@ static int triangulate(Ppoint_t **pointp, size_t pointn,
     }
     return -1;
   } else {
-    A[0] = *pointp[0];
-    A[1] = *pointp[1];
-    A[2] = *pointp[2];
-    fn(vc, A);
+    fn(vc, (Ppoint_t[]){*pointp[0], *pointp[1], *pointp[2]});
   }
   return 0;
 }
