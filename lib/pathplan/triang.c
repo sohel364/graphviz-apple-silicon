@@ -68,7 +68,7 @@ static int triangulate(Ppoint_t **pointp, size_t pointn,
     for (size_t i = 0; i < pointn; i++) {
       const size_t ip1 = (i + 1) % pointn;
       const size_t ip2 = (i + 2) % pointn;
-      if (isdiagonal(i, ip2, pointp, pointn, point_indexer)) {
+      if (isdiagonal(i, pointp, pointn, point_indexer)) {
         A[0] = *pointp[i];
         A[1] = *pointp[ip1];
         A[2] = *pointp[ip2];
@@ -119,12 +119,12 @@ static bool intersects(Ppoint_t pa, Ppoint_t pb, Ppoint_t pc, Ppoint_t pd) {
   return false;
 }
 
-bool isdiagonal(size_t i, size_t ip2, void *pointp, size_t pointn,
-                indexer_t indexer) {
+bool isdiagonal(size_t i, void *pointp, size_t pointn, indexer_t indexer) {
   int res;
 
   /* neighborhood test */
   const size_t ip1 = (i + 1) % pointn;
+  const size_t ip2 = (i + 2) % pointn;
   const size_t im1 = (i + pointn - 1) % pointn;
   /* If P[i] is a convex vertex [ i+1 left of (i-1,i) ]. */
   if (ccw(indexer(pointp, im1), indexer(pointp, i), indexer(pointp, ip1)) ==

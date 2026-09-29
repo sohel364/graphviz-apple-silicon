@@ -326,7 +326,7 @@ static int triangulate(triangles_t *tris, pointnlink_t **points,
     for (size_t pnli = 0; pnli < point_count; pnli++) {
       const size_t pnlip1 = (pnli + 1) % point_count;
       const size_t pnlip2 = (pnli + 2) % point_count;
-      if (isdiagonal(pnli, pnlip2, points, point_count, point_indexer)) {
+      if (isdiagonal(pnli, points, point_count, point_indexer)) {
         if (loadtriangle(tris, points[pnli], points[pnlip1], points[pnlip2]) !=
             0)
           return -1;
