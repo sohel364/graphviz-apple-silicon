@@ -64,7 +64,7 @@ static double fullArea (treenode_t* p, attrsym_t* mp)
 static double getArea (void* obj, attrsym_t* ap)
 {
     double area = late_double (obj, ap, DFLT_SZ, 0);
-    if (is_exactly_zero(area)) area = DFLT_SZ;
+    if (is_exactly_pos_zero(area)) area = DFLT_SZ;
     area *= SCALE;
     return area;
 }

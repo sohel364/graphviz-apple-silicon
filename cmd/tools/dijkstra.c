@@ -117,7 +117,7 @@ static void update(Dict_t * Q, Agnode_t * dest, Agnode_t * src, double len)
     double newlen = getdist(src) + len;
     double oldlen = getdist(dest);
 
-    if (is_exactly_zero(oldlen)) { // first time to see dest
+    if (is_exactly_pos_zero(oldlen)) { // first time to see dest
 	setdist(dest, newlen);
 	if (doPath) setprev(dest, src);
 	dtinsert(Q, dest);
@@ -156,7 +156,7 @@ static void post(Agraph_t * g)
 
     for (v = agfstnode(g); v; v = agnxtnode(g, v)) {
 	dist = getdist(v);
-	if (!is_exactly_zero(dist)) {
+	if (!is_exactly_pos_zero(dist)) {
 	    dist--;
 	    agxbprint(&buf, "%.3lf", dist);
 	    agxset(v, sym, agxbuse(&buf));

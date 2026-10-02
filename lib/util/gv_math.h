@@ -1,6 +1,6 @@
-/// \file
-/// \brief Arithmetic helper functions
-/// \ingroup cgraph_utils
+/// @file
+/// @brief Arithmetic helper functions
+/// @ingroup cgraph_utils
 
 #pragma once
 
@@ -34,48 +34,67 @@ static inline size_t zmin(size_t a, size_t b) { return a < b ? a : b; }
 /// minimum of two integers
 static inline int imin(int a, int b) { return a < b ? a : b; }
 
-/**
- * \brief are two values precisely the same?
- *
- * This function should only be used when you know you want comparison with no
- * tolerance, which is rare. Floating-point arithmetic accumulates imprecision,
- * so equality comparisons should generally include a non-zero tolerance to
- * account for this. In general, this function is only applicable for checking
- * things like “is this variable unchanged since a previous assignment from a
- * literal?”
- *
- * \param a First operand to comparison
- * \param b Second operand to comparison
- * \return True if the values are equal
- */
+/// @brief are two values precisely the same?
+///
+/// This function should only be used when you know you want comparison with no
+/// tolerance, which is rare. Floating-point arithmetic accumulates imprecision,
+/// so equality comparisons should generally include a non-zero tolerance to
+/// account for this. In general, this function is only applicable for checking
+/// things like “is this variable unchanged since a previous assignment from a
+/// literal?”
+///
+/// @param a First operand to comparison
+/// @param b Second operand to comparison
+/// @return True if the values are equal
 static inline bool is_exactly_equal(double a, double b) {
   return memcmp(&a, &b, sizeof(a)) == 0;
 }
 
-/**
- * \brief is a value precisely 0.0?
- *
- * This function should only be used when you know you want comparison with no
- * tolerance, which is rare. Floating-point arithmetic accumulates imprecision,
- * so equality comparisons should generally include a non-zero tolerance to
- * account for this. Valid `double` representations even include -0.0, for which
- * this function will return false. In general, this function is only applicable
- * for checking things like “is this variable unchanged since a previous
- * assignment from the literal `0`?” or “did this value we parsed from user
- * input originate from the string "0.0"?”
- *
- * \param v Value to check
- * \return True if the value is equal to exactly 0.0
- */
-static inline bool is_exactly_zero(double v) { return is_exactly_equal(v, 0); }
+/// @brief is a value precisely +0.0?
+///
+/// This function should only be used when you know you want comparison with no
+/// tolerance, which is rare. Floating-point arithmetic accumulates imprecision,
+/// so equality comparisons should generally include a non-zero tolerance to
+/// account for this. Valid `double` representations even include -0.0, for
+/// which this function will return false. In general, this function is only
+/// applicable for checking things like “is this variable unchanged since a
+/// previous assignment from the literal `0`?” or “did this value we parsed from
+/// user input originate from the string "0.0"?”
+///
+/// @param v Value to check
+/// @return True if the value is equal to exactly 0.0
+static inline bool is_exactly_pos_zero(double v) {
+  return is_exactly_equal(v, 0);
+}
 
-/**
- * \brief scale up or down a non-negative integer, clamping to \p [0, INT_MAX]
- *
- * \param original Value to scale
- * \param scale Scale factor to apply
- * \return Clamped result
- */
+/// @brief is a value precisely +0.0 or -0.0?
+///
+/// This function should only be used in situations where ±0.0 would produce an
+/// error or undesired computation result if not handled as a special case.
+/// Floating-point arithmetic accumulates imprecision, so zero comparisons
+/// should generally be done with respect to a non-zero tolerance (e.g.
+/// `fabs(my_value) < my_tolerance`) to account for this.
+///
+/// The common use case for this function is guarding against division/modulo by
+/// 0.
+///
+/// @param v Value to check
+/// @return True if the value is equal to exactly 0.0 or exactly -0.0
+static inline bool is_exactly_zero(double v) {
+  if (is_exactly_pos_zero(v)) {
+    return true;
+  }
+  if (is_exactly_equal(v, -0.0)) {
+    return true;
+  }
+  return false;
+}
+
+/// @brief scale up or down a non-negative integer, clamping to `[0, INT_MAX]`
+///
+/// @param original Value to scale
+/// @param scale Scale factor to apply
+/// @return Clamped result
 static inline int scale_clamp(int original, double scale) {
   assert(original >= 0);
 

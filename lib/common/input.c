@@ -404,7 +404,7 @@ int dotneato_args_initialize(GVC_t * gvc, int argc, char **argv)
 				rest);
 			return dotneato_usage(argv[0], 1);
 		    }
-		    else if (is_exactly_zero(PSinputscale))
+		    else if (is_exactly_pos_zero(PSinputscale))
 			PSinputscale = POINTS_PER_INCH;
 		} else
 		    PSinputscale = POINTS_PER_INCH;

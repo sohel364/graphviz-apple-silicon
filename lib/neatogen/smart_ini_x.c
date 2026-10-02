@@ -357,8 +357,7 @@ int IMDS_given_dim(vtx_data* graph, int n, double* given_coords,
 					
 				}
 			}
-			if (!is_exactly_zero(balance[i]) && !is_exactly_equal(balance[i], -0.0) &&
-			    fabs(1 - b / balance[i]) > 1e-5) {
+			if (!is_exactly_zero(balance[i]) && fabs(1 - b / balance[i]) > 1e-5) {
 				converged = false;
 				balance[i]=b;
 			}
