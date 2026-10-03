@@ -110,7 +110,10 @@ Put output in <file>. Default output is stdout
 Use modularity quality for clustering rather than the default modularity clustering.
 .TP
 .BI \-r " k"
-The number of random points k (integer) used to define sea and lake boundaries. If 0, auto assigned. By default v = 0
+The number of random points k (integer) used to define sea and lake boundaries.
+If 0, auto assigned. By default v = 0. A negative value, \fI-k\fP, means to
+generate \fIk\[mu]n\fP random points, where \fIn\fP is the number of nodes in
+the input graph.
 .TP
 .BI \-s " v"
 The real number v specifies the depth of the sea and lake shores in points. If 0, auto assigned. By default v = 0.
