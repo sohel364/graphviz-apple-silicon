@@ -7,6 +7,10 @@ and this project adheres to
 
 ## [Unreleased (16.1.1)]
 
+### Changed
+
+- MinGW installers are no longer provided in Graphviz releases.
+
 ### Fixed
 
 - `nop` no longer reorders edges. #2855

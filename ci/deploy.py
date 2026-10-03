@@ -233,10 +233,6 @@ def main() -> int:
             f"windows_10_cmake_Debug_graphviz-install-{version}-win64.exe",
             f"windows_10_cmake_Debug_Graphviz-{version}-win64.zip",
         ],
-        "windows-mingw64-cmake-build": [
-            f"msys2_*_Graphviz-{version}-win64.exe",
-            f"msys2_*_Graphviz-{version}-win64.zip",
-        ],
         "windows-cygwin-build": [f"CYGWIN_*_graphviz-{version}-x86_64.tar.xz"],
         "windows-cygwin-cmake-build": [f"CYGWIN_*_Graphviz-{version}-CYGWIN-1.tar.bz2"],
     }
