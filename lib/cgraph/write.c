@@ -19,16 +19,21 @@
 #include "config.h"
 
 #include <assert.h>
+#include <cdt/cdt.h>
 #include <cgraph/agstrcanon.h>
 #include <cgraph/cghdr.h>
 #include <ctype.h>
 #include <inttypes.h>
 #include <limits.h>
 #include <stdbool.h>
+#include <stddef.h>
 #include <stdio.h> /* need sprintf() */
 #include <stdlib.h>
+#include <util/alloc.h>
+#include <util/bitarray.h>
 #include <util/gv_ctype.h>
 #include <util/strcasecmp.h>
+#include <util/unused.h>
 
 #define EMPTY(s) (((s) == 0) || (s)[0] == '\0')
 
@@ -43,16 +48,20 @@ static int ioput(Agraph_t *g, iochan_t *ofile, char *str) {
 static int Max_outputline = MAX_OUTPUTLINE;
 static Agsym_t *Tailport, *Headport;
 
-/// sentinel marking an edge that has already been written out
-static Agedge_t *const EDGE_DONE = (Agedge_t *)-1;
+/// an edge destined to be written out
+typedef struct {
+  Dtlink_t link;  ///< data used by libcdt
+  unsigned seq;   ///< sequence number
+  Agedge_t *edge; ///< the edge itself
+} pending_edge_t;
 
 typedef struct {
   uint64_t *preorder_number; // of a graph or subgraph
   uint64_t
       *node_last_written; // postorder number of subg when node was last written
-  Agedge_t **edge;        ///< edges seen during node iteration
-  size_t n_edges;         // items in `edges`
-  int level;              // indentation level
+  Dt_t *edges_todo; ///< dictionary (seq → pending_edge_t) of edges to write
+  bitarray_t edges_done; ///< bitset of written edges by sequence ID
+  int level;             // indentation level
 } info_t;
 
 static int write_body(Agraph_t *g, iochan_t *ofile, info_t *info);
@@ -650,22 +659,21 @@ static int write_edge(Agedge_t *e, iochan_t *ofile, Dict_t *d, info_t *info) {
   return ioput(g, ofile, ";\n");
 }
 
-/// write out all the edges pending in `info->edge`
+/// write out all the edges pending in `info->edges_todo`
 ///
 /// @param ofile Channel to write output to
 /// @param d Attribute defaults
 /// @param info State for traversal
 /// @return 0 on success
 static int write_edges(iochan_t *ofile, Dict_t *d, info_t *info) {
-  for (size_t i = 0; i < info->n_edges; ++i) {
-    if (info->edge[i] == NULL || info->edge[i] == EDGE_DONE) {
-      continue;
-    }
-    if (write_edge(info->edge[i], ofile, d, info) == EOF) {
+  for (pending_edge_t *e = dtfirst(info->edges_todo); e != NULL;
+       e = dtnext(info->edges_todo, e)) {
+    if (write_edge(e->edge, ofile, d, info) == EOF) {
       return EOF;
     }
-    info->edge[i] = EDGE_DONE;
+    bitarray_set(&info->edges_done, e->seq, true);
   }
+  dtclear(info->edges_todo);
   return 0;
 }
 
@@ -693,8 +701,9 @@ static int write_body(Agraph_t *g, iochan_t *ofile, info_t *info) {
         prev = aghead(e);
       }
       // pend this edge to be emitted later
-      if (info->edge[AGSEQ(e)] != EDGE_DONE) {
-        info->edge[AGSEQ(e)] = e;
+      pending_edge_t pe = {.seq = AGSEQ(e), .edge = e};
+      if (!bitarray_get(info->edges_done, pe.seq)) {
+        (void)dtinsert(info->edges_todo, &pe);
       }
     }
   }
@@ -761,6 +770,36 @@ static uint64_t subgdfs(Agraph_t *g, uint64_t ix, info_t *info) {
   return ix0 + 1;
 }
 
+static void *copy(void *p, Dtdisc_t *disc UNUSED) {
+  const pending_edge_t *const src = p;
+  pending_edge_t *const dst = gv_alloc(sizeof(*dst));
+  dst->seq = src->seq;
+  dst->edge = src->edge;
+  return dst;
+}
+
+static int cmp(void *a, void *b) {
+  const unsigned *const a_seq = a;
+  const unsigned *const b_seq = b;
+  if (*a_seq < *b_seq) {
+    return -1;
+  }
+  if (*a_seq > *b_seq) {
+    return 1;
+  }
+  return 0;
+}
+
+/// the “discipline” for `info_t.edges_todo`
+static Dtdisc_t edge_disc = {
+    .key = offsetof(pending_edge_t, seq),   // key offset
+    .size = sizeof(unsigned),               // size of key
+    .link = offsetof(pending_edge_t, link), // Dtlink_t field offset
+    .makef = copy,  // copy constructor for a `pending_edge_t`
+    .freef = free,  // destructor for a `pending_edge_t`
+    .comparf = cmp, // comparator for `pending_edge_t` values
+};
+
 static info_t before_write(Agraph_t *g) {
   info_t info = {0};
   set_attrwf(g, true, false);
@@ -768,8 +807,8 @@ static info_t before_write(Agraph_t *g) {
   info.preorder_number = gv_calloc(g->clos->seq[AGRAPH] + 1, sizeof(uint64_t));
   info.node_last_written =
       gv_calloc(g->clos->seq[AGNODE] + 1, sizeof(uint64_t));
-  info.edge = gv_calloc(g->clos->seq[AGEDGE] + 1, sizeof(info.edge[0]));
-  info.n_edges = g->clos->seq[AGEDGE] + 1;
+  info.edges_todo = dtopen(&edge_disc, Dtoset);
+  info.edges_done = bitarray_new(g->clos->seq[AGEDGE] + 1);
   subgdfs(g, 1, &info);
   return info;
 }
@@ -777,5 +816,6 @@ static info_t before_write(Agraph_t *g) {
 static void after_write(info_t info) {
   free(info.preorder_number);
   free(info.node_last_written);
-  free(info.edge);
+  bitarray_reset(&info.edges_done);
+  dtclose(info.edges_todo);
 }

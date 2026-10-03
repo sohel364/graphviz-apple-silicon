@@ -5120,7 +5120,7 @@ def test_2593():
     # that ccomps finishes within that
     ccomps = which("ccomps")
     proc = subprocess.run(
-        [ccomps, "-o", os.devnull, input], timeout=60 * 10, check=False
+        [ccomps, "-o", os.devnull, input], timeout=60 * 5, check=False
     )
 
     assert proc.returncode == 1, "ccomps did not detect graphs have multiple components"
