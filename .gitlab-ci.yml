@@ -382,53 +382,6 @@ macos-autotools-build:
     tags:
         - saas-macos-medium-m1
 
-windows-mingw64-build:
-    stage: build
-    needs:
-        - job: portable-source
-          artifacts: true
-    script:
-        # disable Windows Defender
-        - Set-MpPreference -DisableRealtimeMonitoring $true
-        - powershell -NoProfile -NonInteractive -ExecutionPolicy Bypass -Command ci\mingw-prepare.ps1
-        - $Env:build_system = "autotools"
-        - $Env:use_autogen = "yes"
-        - C:\msys64\msys2_shell.cmd -defterm -mingw64 -here -no-start -l -c 'cd $CI_PROJECT_DIR && ci/mingw-build.sh'
-    tags:
-        - saas-windows-medium-amd64
-    except:
-        - tags
-    retry:
-        max: 1
-        when:
-            - stuck_or_timeout_failure
-            - runner_system_failure
-            - job_execution_timeout
-
-windows-mingw64-static-build:
-    stage: build
-    needs:
-        - job: portable-source
-          artifacts: true
-    script:
-        # disable Windows Defender
-        - Set-MpPreference -DisableRealtimeMonitoring $true
-        - powershell -NoProfile -NonInteractive -ExecutionPolicy Bypass -Command ci\mingw-prepare.ps1
-        - $Env:build_system = "autotools"
-        - $Env:CONFIGURE_OPTIONS = "--disable-shared --enable-static"
-        - $Env:use_autogen = "yes"
-        - C:\msys64\msys2_shell.cmd -defterm -mingw64 -here -no-start -l -c 'cd $CI_PROJECT_DIR && ci/mingw-build.sh'
-    tags:
-        - saas-windows-medium-amd64
-    except:
-        - tags
-    retry:
-        max: 1
-        when:
-            - stuck_or_timeout_failure
-            - runner_system_failure
-            - job_execution_timeout
-
 windows-cygwin-build:
     stage: build
     needs:
@@ -829,53 +782,6 @@ windows-cmake-x64-debug-static-build:
         - $Env:configuration = "Debug"
         - $Env:BUILD_SHARED_LIBS = "OFF"
 
-windows-mingw64-cmake-build:
-    stage: build
-    needs: []
-    script:
-        # disable Windows Defender
-        - Set-MpPreference -DisableRealtimeMonitoring $true
-        - powershell -NoProfile -NonInteractive -ExecutionPolicy Bypass -Command ci\mingw-prepare.ps1
-        - $Env:build_system = "cmake"
-        - C:\msys64\msys2_shell.cmd -defterm -mingw64 -here -no-start -l -c 'cd $CI_PROJECT_DIR && ci/mingw-build.sh'
-    artifacts:
-        when: always
-        expire_in: 1 week
-        paths:
-            - Packages/*/*.exe
-            - Packages/*/*.zip
-    tags:
-        - saas-windows-medium-amd64
-    except:
-        - tags
-    retry:
-        max: 1
-        when:
-            - stuck_or_timeout_failure
-            - runner_system_failure
-            - job_execution_timeout
-
-windows-mingw64-cmake-release-build:
-    stage: build
-    needs: []
-    script:
-        # disable Windows Defender
-        - Set-MpPreference -DisableRealtimeMonitoring $true
-        - powershell -NoProfile -NonInteractive -ExecutionPolicy Bypass -Command ci\mingw-prepare.ps1
-        - $Env:build_system = "cmake"
-        - $Env:CMAKE_OPTIONS = "-DCMAKE_BUILD_TYPE=Release"
-        - C:\msys64\msys2_shell.cmd -defterm -mingw64 -here -no-start -l -c 'cd $CI_PROJECT_DIR && ci/mingw-build.sh'
-    tags:
-        - saas-windows-medium-amd64
-    except:
-        - tags
-    retry:
-        max: 1
-        when:
-            - stuck_or_timeout_failure
-            - runner_system_failure
-            - job_execution_timeout
-
 windows-cygwin-cmake-build:
     stage: build
     needs: []
@@ -1163,34 +1069,6 @@ macos-cmake-test:
     only:
         variables:
           - $ENABLE_GRAPHVIZ_MACOS_CI
-
-windows-mingw64-cmake-test:
-    script:
-        # disable Windows Defender
-        - Set-MpPreference -DisableRealtimeMonitoring $true
-        - powershell -NoProfile -NonInteractive -ExecutionPolicy Bypass -Command ci\mingw-prepare.ps1
-        - $Env:build_system = "cmake"
-        - C:\msys64\msys2_shell.cmd -defterm -mingw64 -here -no-start -l -c 'cd $CI_PROJECT_DIR && ci/mingw-install.sh'
-        - $Env:graphviz_install_dir = "C:\Graphviz"
-        - Invoke-Expression "./Packages/windows-mingw64-cmake-build/*.exe /S /D=$Env:graphviz_install_dir" | Out-Null
-        - $Env:Path = $Env:graphviz_install_dir + "\bin" + ";" + $Env:Path
-        - C:\msys64\msys2_shell.cmd -defterm -mingw64 -here -no-start -l -c 'cd $CI_PROJECT_DIR && ci/mingw-test.sh'
-    needs:
-        - job: "windows-mingw64-cmake-build"
-          artifacts: true
-    tags:
-        - saas-windows-medium-amd64
-    except:
-        - tags
-    artifacts:
-        reports:
-            junit: report.xml
-    retry:
-        max: 1
-        when:
-            - stuck_or_timeout_failure
-            - runner_system_failure
-            - job_execution_timeout
 
 deployment:
     stage: deploy

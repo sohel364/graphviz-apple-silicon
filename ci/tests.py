@@ -19,7 +19,6 @@ from gvtest import (  # pylint: disable=wrong-import-position
     freedesktop_os_release,
     is_cmake,
     is_macos,
-    is_mingw,
     is_static_build,
     is_ubuntu_2604,
     run,
@@ -87,11 +86,7 @@ def test_existence(binary: str):
         check_that_tool_does_not_exist(binary, os_id)
         pytest.skip("mingle is not built for Rocky due to lacking libANN")
 
-    if binary == "mingle" and is_mingw():
-        check_that_tool_does_not_exist(binary, os_id)
-        pytest.skip(f"{binary} is not built on some Windows due to lacking libANN")
-
-    if binary == "gvedit" and platform.system() == "Windows" and not is_mingw():
+    if binary == "gvedit" and platform.system() == "Windows":
         check_that_tool_does_not_exist(binary, os_id)
         pytest.skip(f"{binary} is not built on Windows due to lacking Qt")
 
@@ -118,9 +113,6 @@ def test_existence(binary: str):
     if binary == "dot_builtins" and is_static_build():
         pytest.skip("dot_builtins may not be built in a static build")
 
-    if binary == "diffimg" and build_system() == "cmake" and is_mingw():
-        pytest.skip("libgd not detected on CMake+MinGW")
-
     assert which(binary) is not None
 
 
@@ -134,9 +126,6 @@ def check_that_tool_does_not_exist(tool, os_id):
     )
 
 
-@pytest.mark.skipif(
-    build_system() == "cmake" and is_mingw(), reason="libgd not detected on CMake+MinGW"
-)
 def test_1786():
     """
     png:gd format should be supported
