@@ -49,8 +49,7 @@ int ccw(Ppoint_t p1, Ppoint_t p2, Ppoint_t p3);
 typedef Ppoint_t (*indexer_t)(void *base, size_t index);
 
 /// is (i, i + 2) a diagonal?
-bool isdiagonal(size_t i, size_t ip2, void *pointp, size_t pointn,
-                indexer_t indexer);
+bool isdiagonal(size_t i, void *pointp, size_t pointn, indexer_t indexer);
 
 #ifdef __cplusplus
 }
