@@ -34,6 +34,115 @@ issues generated through automated fuzzing and ASAN testing.
 
 The Graphviz documents are hosted at https://graphviz.org/
 
+## macOS build instructions
+
+The following commands are intended for a macOS machine using Apple Silicon (arm64), such as an M2 Pro. The build uses the Apple Command Line Tools, Homebrew, and CMake. The resulting binaries are native macOS executables; they are not portable to Windows or Linux.
+
+### Prerequisites
+
+Install the Xcode Command Line Tools and Homebrew if they are not already installed:
+
+```sh
+xcode-select --install
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+```
+
+Install the command-line build dependencies:
+
+```sh
+brew update
+brew install cmake pkg-config bison flex libtool
+```
+
+Set the compiler environment for the current Apple Silicon machine:
+
+```sh
+export DEVELOPER_DIR=/Library/Developer/CommandLineTools
+export CMAKE_OSX_ARCHITECTURES=arm64
+```
+
+### Console-only Graphviz build
+
+Use this option when you only need command-line tools such as `dot`, `neato`, `sfdp`, and `gvpr`.
+
+```sh
+cd /path/to/graphviz
+rm -rf build-console install-console
+
+cmake -S . -B build-console \
+  -DCMAKE_OSX_ARCHITECTURES=arm64 \
+  -DCMAKE_INSTALL_PREFIX="$PWD/install-console" \
+  -DENABLE_LTDL=ON \
+  -DWITH_GVEDIT=OFF
+
+cmake --build build-console -j2
+cmake --install build-console
+
+./install-console/bin/dot -V
+```
+
+The executable is available at `install-console/bin/dot`. For example, render a DOT file with:
+
+```sh
+./install-console/bin/dot -Tsvg input.dot -o output.svg
+```
+
+### Graphical GVEdit build with Qt
+
+GVEdit is the graphical Graphviz editor. This build was verified with Qt 5 on Apple Silicon. Qt 5 is recommended for the current source tree because the GUI CMake configuration explicitly searches for Qt 5 after Qt 6.
+
+Install Qt 5 and configure the Homebrew paths:
+
+```sh
+brew install qt@5
+
+QT5_PREFIX="$(brew --prefix qt@5)"
+export PATH="$QT5_PREFIX/bin:$PATH"
+export CPPFLAGS="-I$QT5_PREFIX/include${CPPFLAGS:+ $CPPFLAGS}"
+export LDFLAGS="-L$QT5_PREFIX/lib${LDFLAGS:+ $LDFLAGS}"
+export PKG_CONFIG_PATH="$QT5_PREFIX/lib/pkgconfig${PKG_CONFIG_PATH:+:$PKG_CONFIG_PATH}"
+```
+
+Configure and build the GUI in a separate build directory:
+
+```sh
+cd /path/to/graphviz
+rm -rf build-gui install-gui
+
+cmake -S . -B build-gui \
+  -DCMAKE_OSX_ARCHITECTURES=arm64 \
+  -DCMAKE_INSTALL_PREFIX="$PWD/install-gui" \
+  -DCMAKE_PREFIX_PATH="$QT5_PREFIX" \
+  -DENABLE_LTDL=ON \
+  -DWITH_GVEDIT=ON
+
+cmake --build build-gui -j2
+cmake --install build-gui
+```
+
+Run the application directly from the build tree:
+
+```sh
+./build-gui/cmd/gvedit/gvedit
+```
+
+The executable should report as a native Apple Silicon binary:
+
+```sh
+file ./build-gui/cmd/gvedit/gvedit
+```
+
+Expected output includes `Mach-O 64-bit executable arm64`.
+
+If a different Homebrew prefix is used, replace `/opt/homebrew` in the Qt paths with the result of `brew --prefix`. The GUI build requires the Qt Core, PrintSupport, and Widgets components. If CMake reports that Qt is not found, confirm that `qt@5` is installed and that `CMAKE_PREFIX_PATH` points to its Homebrew prefix.
+
+### Build notes
+
+- The project supports a `WITH_GVEDIT=OFF` command-line build without Qt.
+- `WITH_GVEDIT=ON` enables the GUI; CMake prefers Qt 6 when it is available, but Qt 5 is the verified macOS option for this build.
+- `CMAKE_OSX_ARCHITECTURES=arm64` produces a native Apple Silicon binary. An Intel Mac should use `x86_64` instead.
+- Do not hard-code the Qt package path in the source tree. Use `brew --prefix qt@5` or `CMAKE_PREFIX_PATH` so the build remains portable between machines.
+
 ## Graph Visualization ( https://graphviz.org/about/ )
 
 Graph visualization is a way of representing structural information as diagrams of abstract graphs and networks. It has important applications in networking, bioinformatics, software engineering, database and web design, machine learning, and in visual interfaces for other technical domains.
